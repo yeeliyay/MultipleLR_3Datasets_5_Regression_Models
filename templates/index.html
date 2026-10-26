@@ -1,0 +1,64 @@
+<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Multiple Linear Regression Explorer · CRISP-DM</title><script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script><style>
+:root{font-family:Inter,'Noto Sans TC',system-ui,sans-serif;color:#172742;background:#f3f6fb}*{box-sizing:border-box}body{margin:0}header{background:#0c1b34;color:#fff;padding:18px max(24px,calc((100% - 1280px)/2));display:flex;justify-content:space-between;align-items:center;gap:15px}header b{font-size:20px}header small{color:#b8c8e6}.container{max-width:1280px;margin:auto;padding:26px 18px 50px}.eyebrow{font-size:12px;letter-spacing:2px;color:#2366cc;font-weight:800}.intro h1{font-size:34px;margin:10px 0}.intro p{color:#52617b;line-height:1.7}.panel{background:#fff;border:1px solid #e1e7f1;border-radius:15px;padding:22px;margin-top:22px;box-shadow:0 6px 22px #182e4e0a}.row{display:flex;gap:20px;flex-wrap:wrap;align-items:end}.formgroup{flex:1;min-width:180px}label{display:block;font-size:12px;color:#51617b;font-weight:700;margin-bottom:8px}select,input[type=range]{width:100%}select{padding:12px;border:1px solid #ccd7e7;border-radius:9px;background:white;font-size:15px}a{color:#2366cc}button{background:#175ed2;color:white;border:0;border-radius:8px;padding:11px 18px;cursor:pointer}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:15px;margin-top:20px}.stat{background:#f6f9ff;border:1px solid #e6edf8;padding:17px;border-radius:11px}.stat strong{display:block;font-size:25px;margin:5px 0}.stat span{font-size:12px;color:#697995}.charts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}.chart{height:350px;min-width:0}.wide{grid-column:1/-1}.notice{padding:12px;background:#edf4ff;color:#24436f;border-radius:9px;line-height:1.7}.stepgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.step{padding:14px;background:#f6f8fc;border-radius:10px}.step b{color:#164eac}.step p{font-size:13px;line-height:1.65;color:#52617b}.meta{font-size:14px;line-height:1.7;color:#52617b}table{border-collapse:collapse;width:100%;font-size:13px}th,td{text-align:left;padding:10px;border-bottom:1px solid #e5ebf2}th{background:#f4f7fc}.scroll{max-height:300px;overflow:auto}#status{padding:10px;color:#b34b19}@media(max-width:800px){.charts,.stepgrid{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}header{padding:15px}.intro h1{font-size:25px}}
+</style></head><body><header><b>∑ FIVE REGRESSION MODELS <span style="color:#7baafe">EXPLORER</span></b><small>Linear Regression · Feature Selection · CRISP-DM</small></header><main class="container"><div class="intro"><div class="eyebrow">AIoT · DATA INTELLIGENCE · ASSIGNMENT 2</div><h1>Five Regression Methods · Three Datasets</h1><p>三組資料各自獨立訓練、獨立儲存結果；五種回歸模型獨立比較；使用下拉選單切換，僅顯示當前資料集的模型誤差、解釋力、預測圖、95% 預測區間與殘差診斷。資料在本機進行運算，不使用虛構結果。</p></div>
+<section class="panel"><div class="row"><div class="formgroup"><label>01 / DATASET</label><select id="dataset"><option value="appliances">Appliances Energy</option><option value="parkinsons">Parkinsons Telemonitoring</option><option value="student">Student Performance</option></select></div><div class="formgroup"><label>02 / REGRESSION MODEL</label><select id="method"><option value="ols">Multiple Linear Regression (OLS)</option><option value="ridge">Ridge Regression (L2)</option><option value="lasso">Lasso Regression (L1)</option><option value="elasticnet">Elastic Net Regression</option><option value="bayesianridge">Bayesian Ridge Regression</option></select></div><div class="formgroup"><label>03 / NUMBER OF FEATURES: <span id="klabel">—</span></label><input id="k" type="range" min="1" max="30" value="6"/></div><button id="reload">重新計算</button></div><div id="status">正在載入分析…</div><p class="meta">每個資料集獨立切分 Fit / Calibration / Test，以 F-test 在 Fit 資料上進行特徵排序，並以五種真正的回歸模型分別訓練。滑桿、預測圖、殘差圖與係數全部隨所選模型及 k 同步切換。</p><div id="meta" class="meta"></div></section>
+<div class="stats"><div class="stat"><span>TEST RMSE</span><strong id="rmse">—</strong></div><div class="stat"><span>TEST R²</span><strong id="r2">—</strong></div><div class="stat"><span>TEST MAE</span><strong id="mae">—</strong></div><div class="stat"><span>ORIGINAL FEATURES</span><strong id="features">—</strong></div></div>
+<section class="panel"><h2>特徵數量 × 模型評估</h2><p class="meta">曲線使用固定保留測試集，比較五種回歸模型的測試表現。特徵排序只使用 Fit 資料；測試曲線僅用於分析，不用於宣稱已完成無偏的超參數最佳化。</p><div class="charts"><div class="chart" id="rmseplot"></div><div class="chart" id="r2plot"></div></div></section>
+<section class="panel"><h2>模型預測與不確定性</h2><div id="bestnote" class="notice"></div><div class="charts"><div class="chart wide" id="predplot" style="height:410px"></div><div class="chart" id="scatterplot"></div><div class="chart" id="residplot"></div></div><p class="meta">圖中橫軸為依預測值排序的測試樣本（最多抽取 150 筆）。95% PI 使用額外校正集的 split-conformal 方法，並非迴歸平均值的信賴區間。名目覆蓋率需滿足校正資料與未來樣本可交換的假設；時間序列分布漂移時不保證維持 95%。</p></section>
+<section class="panel"><h2>Selected Model Performance & Coefficients</h2><div class="charts"><div><h3>當前回歸模型 / 各特徵數量</h3><div class="scroll"><table><thead><tr><th>k</th><th>RMSE</th><th>MAE</th><th>R²</th></tr></thead><tbody id="performance"></tbody></table></div></div><div><h3>目前模型與 k 的係數</h3><div class="scroll"><table><thead><tr><th>Feature</th><th>Coefficient (standardized / one-hot)</th></tr></thead><tbody id="coefficients"></tbody></table></div></div></div></section>
+<section class="panel"><h2>CRISP-DM 六階段</h2><div class="stepgrid"><div class="step"><b>01 Business Understanding</b><p id="biz"></p></div><div class="step"><b>02 Data Understanding</b><p id="understand"></p></div><div class="step"><b>03 Data Preparation</b><p>刪除識別欄及可能洩漏目標的欄位；僅在 Fit 資料擬合填補、標準化、One-Hot 及 F-test 特徵排名；另外保留 Calibration 與 Test 資料。</p></div><div class="step"><b>04 Modeling</b><p>以 F-test 排名執行 Feature Selection；以 OLS、Ridge、Lasso、ElasticNet、Bayesian Ridge 五種回歸模型分別在 k=1～最大特徵數下訓練，超參數固定。</p></div><div class="step"><b>05 Evaluation</b><p>以固定測試集的 RMSE、MAE、R²、殘差及校正集建構的 95% split-conformal 預測區間覆蓋率檢驗模型。</p></div><div class="step"><b>06 Deployment</b><p>以 Flask 網頁與 JSON API 輸出互動結果，先在本機訓練產生 results/*.json，部署 Flask/Gunicorn 並公開 JSON API。</p></div></div></section></main>
+<script>
+let datasetData=null, activeRequest=0;
+const el=id=>document.getElementById(id);
+const fmt=(v,n=3)=>Number(v).toLocaleString('en-US',{maximumFractionDigits:n});
+const modelNames={ols:'OLS',ridge:'Ridge',lasso:'Lasso',elasticnet:'ElasticNet',bayesianridge:'Bayesian Ridge'};
+const models=Object.keys(modelNames);
+const pc={responsive:true,displaylogo:false};
+const layout=(title,xt,yt)=>({title:{text:title,font:{size:16}},margin:{l:65,r:25,t:55,b:58},paper_bgcolor:'transparent',plot_bgcolor:'transparent',xaxis:{title:xt,gridcolor:'#e8edf5'},yaxis:{title:yt,gridcolor:'#e8edf5'},legend:{orientation:'h',y:-.25}});
+function chosen(){return datasetData.metrics.find(r=>r.model===el('method').value&&r.k===+el('k').value)}
+function draw(){
+ if(!datasetData)return;
+ const d=datasetData,m=chosen(),model=el('method').value,tag=`${model}_${m.k}`;
+ const p=d.plots[tag], coeff=d.coefficients[tag];
+ el('klabel').textContent=m.k;
+ el('rmse').textContent=fmt(m.rmse,2);
+ el('r2').textContent=fmt(m.r2,4);
+ el('mae').textContent=fmt(m.mae,2);
+ el('features').textContent=d.original_features;
+ for(const [id,metric,title] of [['rmseplot','rmse','Test RMSE (lower is better)'],['r2plot','r2','Test R² (higher is better)']]){
+  Plotly.react(id,models.map(key=>({x:d.metrics.filter(r=>r.model===key).map(r=>r.k),y:d.metrics.filter(r=>r.model===key).map(r=>r[metric]),type:'scatter',mode:'lines+markers',name:modelNames[key],line:{width:key===model?3.5:1.5}})),layout(title,'Number of selected encoded features',metric==='r2'?'R²':'RMSE'),pc);
+ }
+ el('performance').innerHTML=d.metrics.filter(r=>r.model===model).map(r=>`<tr style="${r.k===m.k?'background:#e8f1ff':''}"><td>${r.k}</td><td>${fmt(r.rmse,2)}</td><td>${fmt(r.mae,2)}</td><td>${fmt(r.r2,4)}</td></tr>`).join('');
+ el('coefficients').innerHTML=`<tr><td>Intercept</td><td>${fmt(coeff.intercept,4)}</td></tr>`+coeff.coefs.map(c=>`<tr><td>${c.feature}</td><td>${fmt(c.beta,4)}</td></tr>`).join('');
+ el('bestnote').textContent=`目前模型：${modelNames[model]}；選入 ${m.k} 個編碼後特徵（F-test 排名）；Test RMSE=${fmt(m.rmse,3)}，R²=${fmt(m.r2,4)}，MAE=${fmt(m.mae,3)}；95% PI 測試覆蓋率=${fmt(p.pi_coverage*100,1)}%，平均區間寬度=${fmt(p.pi_mean_width,3)}。`;
+ const ix=p.actual.map((_,i)=>i+1);
+ Plotly.react('predplot',[{x:ix,y:p.upper,mode:'lines',line:{width:0},showlegend:false},{x:ix,y:p.lower,mode:'lines',fill:'tonexty',fillcolor:'rgba(45,117,219,.14)',line:{width:0},name:'95% prediction interval'},{x:ix,y:p.actual,mode:'markers',marker:{size:5,color:'#e27b38'},name:'Actual'},{x:ix,y:p.predicted,mode:'lines',line:{color:'#195bbf'},name:'Predicted'}],layout('Test predictions + 95% PI','Sorted test samples',d.dataset.target),pc);
+ const lo=Math.min(...p.actual,...p.predicted), hi=Math.max(...p.actual,...p.predicted);
+ Plotly.react('scatterplot',[{x:p.actual,y:p.predicted,mode:'markers',marker:{opacity:.5,color:'#195bbf'},name:'Predictions'},{x:[lo,hi],y:[lo,hi],mode:'lines',line:{dash:'dash',color:'#d65f48'},name:'Perfect prediction'}],layout('Actual vs Predicted','Actual','Predicted'),pc);
+ Plotly.react('residplot',[{x:p.predicted,y:p.residual,mode:'markers',marker:{opacity:.6,color:'#2365b5'},name:'Residuals'},{x:[Math.min(...p.predicted),Math.max(...p.predicted)],y:[0,0],mode:'lines',line:{dash:'dash',color:'#d65f48'},showlegend:false}],layout('Residual Diagnostics','Predicted','Actual - Predicted'),pc);
+}
+async function load(refresh=false){
+ const requestId=++activeRequest;datasetData=null;
+ el('status').textContent='載入資料集結果中…';
+ const key=el('dataset').value;
+ try{
+  const response=await fetch('/api/'+(refresh?'refresh/':'analyze/')+key,{method:refresh?'POST':'GET'});
+  const d=await response.json();
+  if(requestId!==activeRequest)return;
+  if(d.error)throw Error(d.error);
+  if(d.schema_version!==2)throw Error('舊版 JSON，請在本機重新執行 python train_all.py 並上傳 results/');
+  datasetData=d;
+  el('k').max=Math.max(...d.metrics.map(r=>r.k)); el('k').value=Math.min(6,+el('k').max);
+  el('meta').innerHTML=`<b>${d.dataset.title}</b> · ${d.count} records · ${d.original_features} raw features · ${d.encoded_features} encoded features · fit ${d.train} / calibration ${d.calibration} / test ${d.test}<p>${d.dataset.note}</p><a href="${d.dataset.kaggle}" target="_blank" rel="noopener">Kaggle data source ↗</a>`;
+  el('biz').textContent=d.dataset.task;
+  el('understand').textContent=`${d.count} 筆資料、${d.original_features} 個原始候選特徵；缺值 ${d.missing}；目標 ${d.dataset.target}，平均 ${fmt(d.target_stats.mean,2)}。`;
+  el('status').textContent=`${d.dataset.title} 已載入；請切換五種回歸模型與特徵數量。`;
+  draw();
+ }catch(error){if(requestId!==activeRequest)return;el('status').textContent='無法載入：'+error.message;datasetData=null;}
+}
+el('dataset').addEventListener('change',()=>load());
+el('method').addEventListener('change',draw);
+el('k').addEventListener('input',draw);
+el('reload').addEventListener('click',()=>load(true));
+load();
+</script></body></html>
