@@ -2,6 +2,10 @@
 
 Three independent Kaggle regression datasets, five regression estimators, F-test feature selection and RMSE/R² evaluation. Flask interactive dashboard with a dataset dropdown, a five-model dropdown, feature count slider, holdout diagnostics, and 95% split-conformal prediction intervals.
 
+## Live Site
+
+[https://yeeliyay.github.io/MultipleLR_3Datasets_5_Regression_Models/](https://yeeliyay.github.io/MultipleLR_3Datasets_5_Regression_Models/)]
+
 ## Five models
 
 - Multiple Linear Regression (OLS) — `LinearRegression()`
