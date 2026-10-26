@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MultipleLR | 5 Regression Models</title>
+<style>
+:root{font-family:Inter,ui-sans-serif,system-ui,"Microsoft JhengHei",sans-serif;color:#152443;background:#f2f5fb}*{box-sizing:border-box}body{margin:0}header{background:#172d5a;color:white;padding:22px max(22px,calc((100vw - 1120px)/2))}header h1{margin:0;font-size:clamp(21px,3vw,30px)}header p{margin:7px 0 0;color:#dce6ff}main{max-width:1120px;margin:auto;padding:28px 20px 64px}.panel,.chart{background:#fff;border:1px solid #dfe7f4;border-radius:16px;box-shadow:0 5px 18px #0d29600b}.panel{padding:24px;margin-bottom:22px}.eyebrow{color:#5070b0;letter-spacing:.06em;font-size:12px;font-weight:750;text-transform:uppercase}label{display:block;font-weight:700;margin-bottom:10px}select{width:100%;font-size:16px;padding:11px 14px;border:1px solid #cbd5e5;border-radius:9px;background:#fff;color:#1b3057}.tabs{display:flex;flex-wrap:wrap;gap:9px;margin-top:12px}.tab{font:inherit;border:1px solid #c5d3ec;border-radius:9px;padding:10px 13px;background:#fff;color:#244273;cursor:pointer}.tab[aria-selected="true"]{background:#1c5fe0;border-color:#1c5fe0;color:#fff}.meta{color:#607190;font-size:14px;margin:16px 0 0}.metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}.chart{padding:20px;min-width:0}.chart h2{margin:0 0 5px;font-size:19px}.hint{font-size:13px;color:#75839b;margin-bottom:15px}.chart img{width:100%;display:block;border-radius:8px}.fallback{background:#fff3ee;color:#a33c1f;padding:15px;border-radius:8px;font-size:14px}.chart a{font-size:13px;color:#2157b8;display:inline-block;margin-top:12px}footer{color:#78859c;font-size:13px;text-align:center;margin-top:24px}@media(max-width:760px){.metrics{grid-template-columns:1fr}.panel{padding:18px}.chart{padding:13px}}
+</style>
+</head>
+<body>
+<header><h1>MultipleLR · Regression Explorer</h1><p>3 Datasets · 5 Regression Models · 30 Result Charts</p></header>
+<main>
+<section class="panel"><div class="eyebrow">01 / Dataset Selection</div><label for="dataset">選擇資料集</label><select id="dataset"><option value="appliances">Appliances Energy</option><option value="parkinsons">Parkinsons Telemonitoring</option><option value="student">Student Performance (Math)</option></select><p class="meta" id="features"></p></section>
+<section class="panel"><div class="eyebrow">02 / Regression Model</div><p style="margin:9px 0">選擇回歸模型，立即切換至相對應的 RMSE 與 R² 圖片。</p><div id="models" class="tabs" role="tablist" aria-label="Regression Models"></div></section>
+<section class="metrics" aria-live="polite"><article class="chart"><h2>RMSE by Number of Features</h2><div class="hint">Lower is better · 越低越好</div><img id="rmse" alt="RMSE by Number of Features"><div class="fallback" id="rmse-error" hidden>找不到 RMSE 圖片。請確認 line_charts_30 資料夾已上傳 GitHub。</div><a id="rmse-link" target="_blank" rel="noopener">查看 RMSE 原始圖片</a></article><article class="chart"><h2>R-squared by Number of Features</h2><div class="hint">Higher is better · 越高越好</div><img id="r2" alt="R-squared by Number of Features"><div class="fallback" id="r2-error" hidden>找不到 R² 圖片。請確認 line_charts_30 資料夾已上傳 GitHub。</div><a id="r2-link" target="_blank" rel="noopener">查看 R² 原始圖片</a></article></section>
+<footer>Static GitHub Pages — no Render, Python server, or runtime API required. The PNG charts are generated locally from the trained models.</footer>
+</main>
+<script>
+const PLANS={appliances:[6,12,17,22,27],parkinsons:[4,8,12,16,19],student:[6,12,18,25,32]};
+const MODELS=[['ols','OLS'],['ridge','Ridge'],['lasso','Lasso'],['elasticnet','ElasticNet'],['bayesianridge','Bayesian Ridge']];
+const state={dataset:'appliances',model:'ols'};
+const $=id=>document.getElementById(id);
+for(const [id,label] of MODELS){const b=document.createElement('button');b.className='tab';b.type='button';b.setAttribute('role','tab');b.dataset.model=id;b.textContent=label;b.addEventListener('click',()=>{state.model=id;render()});$('models').appendChild(b)}
+$('dataset').addEventListener('change',e=>{state.dataset=e.target.value;render()});
+function render(){document.querySelectorAll('.tab').forEach(b=>{const selected=b.dataset.model===state.model;b.setAttribute('aria-selected',selected);b.tabIndex=selected?0:-1});$('features').textContent='Number of Features (k): '+PLANS[state.dataset].join(' · ');for(const metric of ['rmse','r2']){const src=`line_charts_30/${state.dataset}/${state.dataset}_${state.model}_${metric}.png`;const img=$(metric),err=$(metric+'-error'),link=$(metric+'-link');err.hidden=true;img.hidden=false;link.hidden=false;img.onerror=()=>{img.hidden=true;err.hidden=false;link.hidden=true};img.alt=`${state.dataset} · ${state.model} · ${metric} chart`;img.src=src;link.href=src}}
+render();
+</script>
+</body></html>
